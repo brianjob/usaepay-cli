@@ -1,0 +1,9 @@
+<Token xsi:type="ns1:ueSecurityToken">
+  <ClientIP xsi:type="xsd:string">{{ClientIP}}</ClientIP>
+  <PinHash xsi:type="ns1:ueHash">
+    <HashValue xsi:type="xsd:string">{{HashValue}}</HashValue>
+    <Seed xsi:type="xsd:string">{{Seed}}</Seed>
+    <Type xsi:type="xsd:string">{{Type}}</Type>
+  </PinHash>
+  <SourceKey xsi:type="xsd:string">{{SourceKey}}</SourceKey>
+</Token>

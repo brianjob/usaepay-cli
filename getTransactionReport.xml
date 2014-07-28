@@ -1,0 +1,7 @@
+<ns1:getTransactionReport>
+  {{#Token}}{{{TokenString}}}{{/Token}}
+  <StartDate xsi:type="xsd:string">{{StartDate}}</StartDate>
+  <EndDate xsi:type="xsd:string">{{EndDate}}</EndDate>
+  <Report xsi:type="xsd:string">{{Report}}</Report>
+  <Format xsi:type="xsd:string">{{Format}}</Format>
+</ns1:getTransactionReport>
