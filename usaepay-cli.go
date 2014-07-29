@@ -14,7 +14,8 @@ func main() {
 	location := flag.String("location", "", "usaepay endpoint")
 	key := flag.String("key", "", "gateway source key")
 	pin := flag.String("pin", "", "gateway pin")
-	reqFile := flag.String("req-file", "", "path to request file (json)")
+	reqFile := flag.String("req", "", "path to request file (json)")
+	outFile := flag.String("out", "", "path to output file")
 	flag.Parse()
 
 	token := &usaepay.Token{
@@ -48,7 +49,9 @@ func main() {
 
 	repRes, err := usaepay.NewGetTransactionReportResponse(resp.Body)
 	if err != nil { log.Panic(err.Error()) }
-	body, err := repRes.DecodeString()
+	b, err := repRes.Decode()
 	if err != nil { log.Panic(err.Error()) }
-	log.Print(body)
+	// write whole the body
+	err = ioutil.WriteFile(*outFile, b, 0644)
+	if err != nil { panic(err) }
 }
