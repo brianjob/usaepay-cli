@@ -7,7 +7,7 @@ import (
 	"flag"
 	"encoding/json"
 	"io/ioutil"
-	"./usaepay"
+	"usaepay-cli/usaepay"
 )
 
 func main() {
