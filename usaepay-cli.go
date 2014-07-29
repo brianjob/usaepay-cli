@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"usaepay-cli/usaepay"
+	"os"
 )
 
 func main() {
@@ -17,6 +18,10 @@ func main() {
 	reqFile := flag.String("req", "", "path to request file (json)")
 	outFile := flag.String("out", "", "path to output file")
 	flag.Parse()
+	if flag.NFlag() == 0 {
+		flag.PrintDefaults()
+		os.Exit(0)
+	}
 
 	token := &usaepay.Token{
 		ClientIP: "192.168.0.1",
