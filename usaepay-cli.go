@@ -40,12 +40,9 @@ func main() {
 	}
 
 	resp, err := client.Do(req)
-/*	if err != nil {
-		log.Panic(err.Error())
-	}
-	if resp.StatusCode != 200 {
- log.Panic(resp.Status)
- }*/
+	if err != nil { log.Println(err.Error()) }
+	if resp.StatusCode != 200 { log.Println(resp.Status) }
+	log.Println(resp)
 
 	repRes, err := usaepay.NewGetTransactionReportResponse(resp.Body)
 	if err != nil { log.Panic(err.Error()) }
