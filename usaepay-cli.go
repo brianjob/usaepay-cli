@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bytes"
-	"net/http"
 	"log"
 	"flag"
 	"encoding/json"
+	"encoding/xml"
 	"io/ioutil"
 	"usaepay-cli/usaepay"
 	"os"
@@ -17,43 +16,28 @@ func main() {
 	pin := flag.String("pin", "", "gateway pin")
 	reqFile := flag.String("req", "", "path to request file (json)")
 	outFile := flag.String("out", "", "path to output file")
+	debug := flag.Bool("debug", false, "debug mode")
 	flag.Parse()
 	if flag.NFlag() == 0 {
 		flag.PrintDefaults()
 		os.Exit(0)
 	}
 
-	token := &usaepay.Token{
-		ClientIP: "192.168.0.1",
-		SourceKey: *key,
-		Pin: *pin,
-		Type: "sha1",
-	}
+	token := usaepay.NewToken(*key, *pin)
 
+	// Read req file
 	reqData, err := ioutil.ReadFile(*reqFile)
 	if err != nil { log.Panic(err.Error()) }
+
+
 	reportReq := &usaepay.GetTransactionReportRequest{}
 	err = json.Unmarshal(reqData, reportReq)
 	if err != nil { log.Panic(err.Error()) }
-	reportReq.Token = *token
-	
-	buffer := bytes.NewBufferString(reportReq.String())
-	client := http.Client{}
-	req, err := http.NewRequest("POST", *location, buffer)
-	if err != nil {
-		log.Panic(err.Error())
-	}
+	reportReq.Token = token
 
-	resp, err := client.Do(req)
-	if err != nil { log.Println(err.Error()) }
-	if resp.StatusCode != 200 { log.Println(resp.Status) }
-	log.Println(resp)
-
-	repRes, err := usaepay.NewGetTransactionReportResponse(resp.Body)
+	body, err := xml.MarshalIndent(reportReq, "", "   ")
+	if *debug { log.Println(string(body)) }
+	req, err := usaepay.NewRequest(*location, string(body))
 	if err != nil { log.Panic(err.Error()) }
-	b, err := repRes.Decode()
-	if err != nil { log.Panic(err.Error()) }
-	// write whole the body
-	err = ioutil.WriteFile(*outFile, b, 0644)
-	if err != nil { panic(err) }
+	usaepay.HandleResponse(req, *outFile)
 }

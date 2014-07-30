@@ -5,19 +5,30 @@ import (
 	"encoding/base64"
 	"io"
 	"io/ioutil"
-	"github.com/hoisie/mustache"
+	"time"
+)
+
+const (
+	DateFormat = "01/02/2006"
 )
 
 type GetTransactionReportRequest struct {
+	XMLName xml.Name `xml:"ns1:getTransactionReport"`
+	Token *Token
 	StartDate string
 	EndDate string
 	Report string
 	Format string
-	Token
 }
 
-func (req *GetTransactionReportRequest) String() string {
-	return mustache.RenderFileInLayout("./usaepay/getTransactionReport.xml", "./usaepay/envelope.xml", req)
+func NewGetTransactionReportRequest(token *Token, start time.Time, end time.Time, report string, format string) *GetTransactionReportRequest {
+	return &GetTransactionReportRequest{
+		Token: token,
+		StartDate: start.Format(DateFormat),
+		EndDate: end.Format(DateFormat),
+		Report: report,
+		Format: format,
+	}
 }
 
 type GetTransactionReportResponse struct {

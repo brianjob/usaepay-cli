@@ -6,14 +6,17 @@ import (
 	"strconv"
 	"time"
 	"encoding/hex"
-	"github.com/hoisie/mustache"
+	"encoding/xml"
 )
 
 type Token struct {
+	XMLName xml.Name `xml:"Token"`
 	ClientIP string
 	SourceKey string
-	Type string
-	Pin string
+	HashValue string `xml:"PinHash>HashValue"`
+	Seed string `xml:"PinHash>Seed"`
+	Type string `xml:"PinHash>Type"`
+	Pin string `xml:"-"`
 	unixNano string
 }
 
@@ -24,20 +27,31 @@ func (t *Token) UnixNano() string {
 	return t.unixNano
 }
 
-func (t *Token) Seed() string {
+func (t *Token) GetSeed() string {
 	return t.UnixNano()
 }
 
-func (t *Token) HashValue() string {
+func (t *Token) GetHashValue(sourceKey, pin, seed string) string {
 	h := sha1.New()
-	io.WriteString(h, t.SourceKey)
-	io.WriteString(h, t.Seed())
-	io.WriteString(h, t.Pin)
+	io.WriteString(h, sourceKey)
+	io.WriteString(h, seed)
+	io.WriteString(h, pin)
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-func (t *Token) TokenString() string {
-	body := mustache.RenderFile("./usaepay/token.xml", t)
-	return body
+func (t *Token) XMLString() string {
+	m, _ := xml.MarshalIndent(t, "", "   ")
+	return string(m)
 }
 
+func NewToken(sourceKey, pin string) *Token {
+	token := &Token{
+		SourceKey: sourceKey, 
+		Pin: pin,
+		ClientIP: "192.168.0.1", 
+		Type: "sha1",
+	}
+	token.Seed = token.GetSeed()
+	token.HashValue = token.GetHashValue(sourceKey, pin, token.Seed)
+	return token
+}
