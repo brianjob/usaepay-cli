@@ -12,10 +12,6 @@ string	Format	Specify format of return data. Possible formats include: csv, tab,
 string	Sort	Field name to sort the results by
 */
 
-type Field struct {
-	Item string `xml:"item"`
-}
-
 type Search struct {
 	XMLName xml.Name `xml:"Search"`
 	Params []*SearchParam
@@ -33,7 +29,7 @@ type SearchTransactionsCustomRequest struct {
 	MatchAll bool
 	Start int
 	Limit int
-	FieldList []*Field
+	FieldList []string `xml:"FieldList>item"`
 	Format string
 	Sort string
 	Search *Search
