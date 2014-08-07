@@ -8,9 +8,10 @@ import (
 )
 
 type Response interface {
-	Handle(req *http.Request, outFile string) ([]byte, error)
-	Decode() ([]byte, error)
+	Handle(req *http.Request) ([]byte, error)
+	Decode([]byte) ([]byte, error)
 	GetBody() string
+	ToXML() 
 }
 
 type USAePayResponse struct {
@@ -21,7 +22,7 @@ func Base64Decode(body string) ([]byte, error) {
 	return base64.URLEncoding.DecodeString(body)
 }
 
-func (res *USAePayResponse) Handle(req *http.Request, outFile string) ([]byte, error) {
+func (res *USAePayResponse) Handle(req *http.Request) ([]byte, error) {
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil { log.Println(err.Error()) }

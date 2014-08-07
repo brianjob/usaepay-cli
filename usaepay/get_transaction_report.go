@@ -28,11 +28,8 @@ func (res *GetTransactionReportResponse) GetBody() string {
 	return res.Body
 }
 
-func (res *GetTransactionReportResponse) Decode() ([]byte, error) {
+func (res *GetTransactionReportResponse) Decode(respBody []byte) ([]byte, error) {
+	err := xml.Unmarshal(respBody, res)
+	if err != nil { return nil, err }
 	return Base64Decode(res.Body)
-}
-
-func (res *GetTransactionReportResponse) DecodeString() (string, error) {
-	d, err := res.Decode()
-	return string(d), err
 }

@@ -4,7 +4,7 @@ import (
 	"log"
 	"flag"
 	"io/ioutil"	
-	"encoding/xml"
+//	"encoding/xml"
 	"usaepay-cli/usaepay"
 	"os"
 )
@@ -50,13 +50,9 @@ func main() {
 
 	httpReq, err := usaepay.NewRequest(*location, string(body))
 	if err != nil { log.Panic(err.Error()) }
-	resBody, err := res.Handle(httpReq, *outFile)
+	fullBody, err := res.Handle(httpReq)
 	if err != nil { log.Panic(err.Error()) }
-
-	err = xml.Unmarshal(resBody, res)
-	if err != nil { panic(err) }
-	b, err := res.Decode()
-	if err != nil { log.Panic(err.Error()) }
+	b, err := res.Decode(fullBody)
 	// write whole the body
 	err = ioutil.WriteFile(*outFile, b, 0644)
 	if err != nil { panic(err) }

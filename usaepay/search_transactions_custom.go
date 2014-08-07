@@ -2,7 +2,6 @@ package usaepay
 
 import (
 	"encoding/xml"
-	"log"
 )
 /*
 boolean	MatchAll	If set to “true,” only results matching all search criteria will be returned, if set to “false,” results matching any of the search criteria will be returned.
@@ -50,12 +49,8 @@ func (res *SearchTransactionsCustomResponse) GetBody() string {
 	return res.Body
 }
 
-func (res *SearchTransactionsCustomResponse) Decode() ([]byte, error) {
-	log.Println("OI")
+func (res *SearchTransactionsCustomResponse) Decode(respBody []byte) ([]byte, error) {
+	err := xml.Unmarshal(respBody, res)
+	if err != nil { return nil, err }
 	return Base64Decode(res.Body)
-}
-
-func (res *SearchTransactionsCustomResponse) DecodeString() (string, error) {
-	d, err := res.Decode()
-	return string(d), err
 }
