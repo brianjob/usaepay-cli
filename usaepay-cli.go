@@ -3,15 +3,15 @@ package main
 import (
 	"log"
 	"flag"
-	"encoding/json"
+	"io/ioutil"	
 	"encoding/xml"
-	"io/ioutil"
 	"usaepay-cli/usaepay"
 	"os"
 )
 
 func main() {
 	location := flag.String("location", "", "usaepay endpoint")
+	action := flag.String("action", "", "API request action")
 	key := flag.String("key", "", "gateway source key")
 	pin := flag.String("pin", "", "gateway pin")
 	reqFile := flag.String("req", "", "path to request file (json)")
@@ -23,21 +23,41 @@ func main() {
 		os.Exit(0)
 	}
 
-	token := usaepay.NewToken(*key, *pin)
-
 	// Read req file
 	reqData, err := ioutil.ReadFile(*reqFile)
 	if err != nil { log.Panic(err.Error()) }
 
+	token := usaepay.NewToken(*key, *pin)
 
-	reportReq := &usaepay.GetTransactionReportRequest{}
-	err = json.Unmarshal(reqData, reportReq)
-	if err != nil { log.Panic(err.Error()) }
-	reportReq.Token = token
+	var req usaepay.Request
+	var res usaepay.Response
+	var body []byte
+	if (*action == "getTransactionReport") {
+		req = new(usaepay.GetTransactionReportRequest)
+		req.SetToken(token)
+		body, err = usaepay.JSONToXML(req, reqData)
+		if err != nil { log.Panic(err.Error()) }
+		res = new(usaepay.GetTransactionReportResponse)
+	} else if (*action == "searchTransactionsCustom") {
+		req = new(usaepay.SearchTransactionsCustomRequest)
+		req.SetToken(token)
+		body, err = usaepay.JSONToXML(req, reqData)
+		if err != nil { log.Panic(err.Error()) }
+		res = new(usaepay.SearchTransactionsCustomResponse)
+	}
 
-	body, err := xml.MarshalIndent(reportReq, "", "   ")
 	if *debug { log.Println(string(body)) }
-	req, err := usaepay.NewRequest(*location, string(body))
+
+	httpReq, err := usaepay.NewRequest(*location, string(body))
 	if err != nil { log.Panic(err.Error()) }
-	usaepay.HandleResponse(req, *outFile)
+	resBody, err := res.Handle(httpReq, *outFile)
+	if err != nil { log.Panic(err.Error()) }
+
+	err = xml.Unmarshal(resBody, res)
+	if err != nil { panic(err) }
+	b, err := res.Decode()
+	if err != nil { log.Panic(err.Error()) }
+	// write whole the body
+	err = ioutil.WriteFile(*outFile, b, 0644)
+	if err != nil { panic(err) }
 }

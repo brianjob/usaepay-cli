@@ -1,11 +1,10 @@
 package usaepay
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"net/http"
-	"io/ioutil"
 	"bytes"
-	"log"
 )
 
 type Body struct {
@@ -24,6 +23,19 @@ type Envelope struct {
 	Body Body
 }
 
+type Request interface {
+	SetToken(*Token)
+}
+
+type USAePayRequest struct {
+	Token *Token
+	Request
+}
+
+func (r *USAePayRequest) SetToken(t *Token) {
+	r.Token = t
+}
+
 func NewEnvelope(body string) *Envelope {
 	return &Envelope{
 		Xsd: "http://www.w3.org/2001/XMLSchema",
@@ -40,26 +52,12 @@ func NewRequest(location, body string) (*http.Request, error) {
 	envelope := NewEnvelope(body)
 	m, err := xml.MarshalIndent(envelope, "", "   ")
 	if err != nil { return nil, err }
-	log.Println(string(m))
 	buffer := bytes.NewBufferString(string(m))
 	return http.NewRequest("POST", location, buffer)
 }
 
-func HandleResponse(req *http.Request, outFile string) {
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil { log.Println(err.Error()) }
-	if resp.StatusCode != 200 { 
-		log.Println(resp.Status)
-		body, _ := ioutil.ReadAll(resp.Body)
-		log.Println(string(body))
-	}
-
-	repRes, err := NewGetTransactionReportResponse(resp.Body)
-	if err != nil { log.Panic(err.Error()) }
-	b, err := repRes.Decode()
-	if err != nil { log.Panic(err.Error()) }
-	// write whole the body
-	err = ioutil.WriteFile(outFile, b, 0644)
-	if err != nil { panic(err) }
+func JSONToXML(report Request, data []byte) ([]byte, error) {
+	err := json.Unmarshal(data, report)
+	if err != nil { return nil, err }
+	return xml.MarshalIndent(report, "", "   ")
 }
