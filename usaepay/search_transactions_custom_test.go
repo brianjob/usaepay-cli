@@ -20,8 +20,7 @@ func TestRequestXML(t *testing.T) {
 	}
 	params := []*SearchParam{param, param2}
 	search := &Search{Params: params}
-	field := &Field{"Details.Amount"}
-	fields := []*Field{field}
+	fields := []string{"Details.Amount"}
 	r := &SearchTransactionsCustomRequest{
 		MatchAll: true,
 		Start: 10,
