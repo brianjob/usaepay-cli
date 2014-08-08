@@ -10,7 +10,6 @@ const (
 
 type GetTransactionReportRequest struct {
 	XMLName xml.Name `xml:"ns1:getTransactionReport"`
-	Token Token
 	StartDate string
 	EndDate string
 	Report string
