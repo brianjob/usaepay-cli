@@ -44,6 +44,12 @@ func main() {
 		body, err = usaepay.JSONToXML(req, reqData)
 		if err != nil { log.Panic(err.Error()) }
 		res = new(usaepay.SearchTransactionsCustomResponse)
+	} else if (*action == "searchCustomers") {
+		req = new(usaepay.SearchCustomersRequest)
+		req.SetToken(token)
+		body, err = usaepay.JSONToXML(req, reqData)
+		if err != nil { log.Panic(err.Error()) }
+		res = new(usaepay.SearchCustomersResponse)
 	}
 
 	if *debug { log.Println(string(body)) }
@@ -53,6 +59,7 @@ func main() {
 	fullBody, err := res.Handle(httpReq)
 	if err != nil { log.Panic(err.Error()) }
 	b, err := res.Decode(fullBody)
+	if err != nil { log.Panic(err.Error()) }
 	// write whole the body
 	err = ioutil.WriteFile(*outFile, b, 0644)
 	if err != nil { panic(err) }
