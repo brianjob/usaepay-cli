@@ -94,16 +94,16 @@ type TransactionRequestObject struct {
 	AuthCode string
 	RefNum string
 	AccountHolder string
-	Details TransactionDetail
-	CreditCardData CreditCardData
-	CheckData CheckData
+	Details *TransactionDetail
+	CreditCardData *CreditCardData
+	CheckData *CheckData
 	ClientIP string
 	CustomerID string
-	BillingAddress Address
-	ShippingAddress Address
+	BillingAddress *Address
+	ShippingAddress *Address
 	CustReceipt bool
 	Software string
 	CustReceiptName string
-	RecurringBilling RecurringBilling
+	RecurringBilling *RecurringBilling
 	LineItems *[]LineItem
 }
