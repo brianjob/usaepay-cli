@@ -25,6 +25,7 @@ type Envelope struct {
 
 type Request interface {
 	SetToken(*Token)
+	PostProcess() error
 }
 
 type USAePayRequest struct {

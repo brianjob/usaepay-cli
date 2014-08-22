@@ -10,9 +10,10 @@ import (
 	"os"
 )
 
-var Usage = func() {
+var Usage = func(flags *flag.FlagSet) {
 	fmt.Fprintf(os.Stderr, "Usage of %s [command]:\n", os.Args[0])
-	flag.PrintDefaults()
+	flags.PrintDefaults()
+	os.Exit(0)
 }
 
 func main() {
@@ -28,7 +29,19 @@ func main() {
 	pin := flags.String("pin", "", "gateway pin")
 	debug := flags.Bool("debug", false, "debug mode")
 
-	flags.Parse(os.Args[2:])
+	if len(os.Args) > 1 {
+		flags.Parse(os.Args[2:])
+	}
+
+	// Command Required
+	if cmd == "" {
+		Usage(flags)
+	}
+	
+	// Required Flags
+	if *location == "" || *key == "" || *pin == "" {
+		Usage(flags)
+	}
 
 	// Read req file
 	in, err := ioutil.ReadAll(os.Stdin)
@@ -63,6 +76,14 @@ func main() {
 		body, err = usaepay.JSONToXML(req, in)
 		if err != nil { log.Panic(err.Error()) }
 		res = new(usaepay.RunTransactionResponse)
+	case "createBatchUpload":
+		req = new(usaepay.CreateBatchUploadRequest)
+		req.SetToken(token)
+		_, err = usaepay.JSONToXML(req, in)
+		err := req.PostProcess()
+		body, err = usaepay.JSONToXML(req, in)
+		if err != nil { log.Panic(err.Error()) }
+		res = new(usaepay.CreateBatchUploadResponse)
 	}
 
 	if *debug { log.Println(string(body)) }
