@@ -27,7 +27,8 @@ func main() {
 	location := flags.String("location", "", "usaepay endpoint")
 	key := flags.String("key", "", "gateway source key")
 	pin := flags.String("pin", "", "gateway pin")
-	out := flags.String("out", "", "write output to file instead of printing")
+	inPath := flags.String("in", "", "grab input from file instead of stdin")
+	out := flags.String("out", "", "write output to file instead of stdout")
 	debug := flags.Bool("debug", false, "debug mode")
 
 	if len(os.Args) > 1 {
@@ -44,9 +45,17 @@ func main() {
 		Usage(flags)
 	}
 
-	// Read req file
-	in, err := ioutil.ReadAll(os.Stdin)
-	if err != nil { log.Panic(err.Error()) }
+	// Input
+	var in []byte
+	var err error
+	if *inPath == "" {
+		in, err = ioutil.ReadAll(os.Stdin)
+		if err != nil { log.Panic(err.Error()) }
+	} else {
+		in, err = ioutil.ReadFile(*inPath)
+		if err != nil { log.Panic(err.Error()) }
+	}
+
 	token := usaepay.NewToken(*key, *pin)
 
 	var req usaepay.Request
