@@ -27,6 +27,7 @@ func main() {
 	location := flags.String("location", "", "usaepay endpoint")
 	key := flags.String("key", "", "gateway source key")
 	pin := flags.String("pin", "", "gateway pin")
+	out := flags.String("out", "", "write output to file instead of printing")
 	debug := flags.Bool("debug", false, "debug mode")
 
 	if len(os.Args) > 1 {
@@ -95,5 +96,10 @@ func main() {
 	b, err := res.Decode(fullBody)
 	if err != nil { log.Panic(err.Error()) }
 	// write whole the body
-	os.Stdout.Write(b) 
+	if *out == "" {
+		os.Stdout.Write(b)
+	} else {
+		err = ioutil.WriteFile(*out, b, 0644)
+		if err != nil { log.Panic(err) }
+	}
 }
