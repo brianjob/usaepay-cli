@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"flag"
 	"bytes"
-	"io/ioutil"	
-//	"encoding/xml"
+	"io/ioutil"
 	"usaepay-cli/usaepay"
 	"os"
 )
@@ -43,6 +42,7 @@ func main() {
 	out := flags.String("out", "", "write output to file instead of stdout")
 	errPath := flags.String("error", "", "write errors to file instead of stderr (excluding USAePay errors)")
 	debug := flags.Bool("debug", false, "debug mode")
+	legacy := flags.Bool("legacy", false, "support legacy JSON API. (Only Applies to runTransction)")
 
 	if len(os.Args) > 1 {
 		flags.Parse(os.Args[2:])
@@ -74,10 +74,13 @@ func main() {
 	var req usaepay.Request
 	var res usaepay.Response
 	var body bytes.Buffer
+	var legacyBody []byte
 
-	body.WriteString("<ns1:")
-	body.WriteString(cmd)
-	body.WriteString(">\n")
+	if *legacy != true {
+		body.WriteString("<ns1:")
+		body.WriteString(cmd)
+		body.WriteString(">\n")
+	}
 
 	switch cmd {
 	case "getTransactionReport":
@@ -96,15 +99,27 @@ func main() {
 		req = new(usaepay.CreateBatchUploadRequest)
 		req.SetToken(token)
 		res = new(usaepay.CreateBatchUploadResponse)
+	case "runTransaction":
+		if *legacy {
+			req = new(usaepay.RunTransactionRequest)
+			req.SetToken(token)
+			legacyBody, err = usaepay.JSONToXML(req, in)
+			if err != nil { Error(err, errPath) }
+		}
+		res = new(usaepay.RawResponse)
 	default:
 		res = new(usaepay.RawResponse)
 	}
 
-	body.Write(in)
-	body.WriteString(token.XMLString())
-	body.WriteString("\n</ns1:")
-	body.WriteString(cmd)
-	body.WriteString(">")
+	if *legacy != true {
+		body.Write(in)
+		body.WriteString(token.XMLString())
+		body.WriteString("\n</ns1:")
+		body.WriteString(cmd)
+		body.WriteString(">")
+	} else {
+		body.Write(legacyBody)
+	}
 
 	if *debug { log.Println(body.String()) }
 
