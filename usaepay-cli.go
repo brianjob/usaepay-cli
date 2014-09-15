@@ -4,6 +4,7 @@ import (
 	"log"
 	"fmt"
 	"flag"
+	"bytes"
 	"io/ioutil"	
 //	"encoding/xml"
 	"usaepay-cli/usaepay"
@@ -72,45 +73,42 @@ func main() {
 
 	var req usaepay.Request
 	var res usaepay.Response
-	var body []byte
+	var body bytes.Buffer
+
+	body.WriteString("<ns1:")
+	body.WriteString(cmd)
+	body.WriteString(">\n")
+
 	switch cmd {
 	case "getTransactionReport":
 		req = new(usaepay.GetTransactionReportRequest)
 		req.SetToken(token)
-		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { Error(err, errPath) }
 		res = new(usaepay.GetTransactionReportResponse)
 	case "searchTransactionsCustom":
 		req = new(usaepay.SearchTransactionsCustomRequest)
 		req.SetToken(token)
-		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { Error(err, errPath) }
 		res = new(usaepay.SearchTransactionsCustomResponse)
 	case "searchCustomers":
 		req = new(usaepay.SearchCustomersRequest)
 		req.SetToken(token)
-		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { Error(err, errPath) }
 		res = new(usaepay.SearchCustomersResponse)
-	case "runTransaction":
-		req = new(usaepay.RunTransactionRequest)
-		req.SetToken(token)
-		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { Error(err, errPath) }
-		res = new(usaepay.RunTransactionResponse)
 	case "createBatchUpload":
 		req = new(usaepay.CreateBatchUploadRequest)
 		req.SetToken(token)
-		_, err = usaepay.JSONToXML(req, in)
-		err := req.PostProcess()
-		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { Error(err, errPath) }
 		res = new(usaepay.CreateBatchUploadResponse)
+	default:
+		res = new(usaepay.RawResponse)
 	}
 
-	if *debug { log.Println(string(body)) }
+	body.Write(in)
+	body.WriteString(token.XMLString())
+	body.WriteString("\n</ns1:")
+	body.WriteString(cmd)
+	body.WriteString(">")
 
-	httpReq, err := usaepay.NewRequest(*location, string(body))
+	if *debug { log.Println(body.String()) }
+
+	httpReq, err := usaepay.NewRequest(*location, body.String())
 	if err != nil { Error(err, errPath) }
 	fullBody, err := res.Handle(httpReq)
 	if err != nil { Error(err, errPath) }
