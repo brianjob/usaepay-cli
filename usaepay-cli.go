@@ -16,6 +16,17 @@ var Usage = func(flags *flag.FlagSet) {
 	os.Exit(0)
 }
 
+func Error(err error, errPath* string) {
+	if err == nil { return }
+	if *errPath != "" {
+		err = ioutil.WriteFile(*errPath, []byte(err.Error()), 0644)
+		if err != nil { panic(err) }
+	} else {
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+	}
+	os.Exit(0)
+}
+
 func main() {
 	cmd := ""
 	if len(os.Args) > 1 {
@@ -29,6 +40,7 @@ func main() {
 	pin := flags.String("pin", "", "gateway pin")
 	inPath := flags.String("in", "", "grab input from file instead of stdin")
 	out := flags.String("out", "", "write output to file instead of stdout")
+	errPath := flags.String("error", "", "write errors to file instead of stderr (excluding USAePay errors)")
 	debug := flags.Bool("debug", false, "debug mode")
 
 	if len(os.Args) > 1 {
@@ -50,10 +62,10 @@ func main() {
 	var err error
 	if *inPath == "" {
 		in, err = ioutil.ReadAll(os.Stdin)
-		if err != nil { log.Panic(err.Error()) }
+		if err != nil { Error(err, errPath) }
 	} else {
 		in, err = ioutil.ReadFile(*inPath)
-		if err != nil { log.Panic(err.Error()) }
+		if err != nil { Error(err, errPath) }
 	}
 
 	token := usaepay.NewToken(*key, *pin)
@@ -66,25 +78,25 @@ func main() {
 		req = new(usaepay.GetTransactionReportRequest)
 		req.SetToken(token)
 		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { log.Panic(err.Error()) }
+		if err != nil { Error(err, errPath) }
 		res = new(usaepay.GetTransactionReportResponse)
 	case "searchTransactionsCustom":
 		req = new(usaepay.SearchTransactionsCustomRequest)
 		req.SetToken(token)
 		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { log.Panic(err.Error()) }
+		if err != nil { Error(err, errPath) }
 		res = new(usaepay.SearchTransactionsCustomResponse)
 	case "searchCustomers":
 		req = new(usaepay.SearchCustomersRequest)
 		req.SetToken(token)
 		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { log.Panic(err.Error()) }
+		if err != nil { Error(err, errPath) }
 		res = new(usaepay.SearchCustomersResponse)
 	case "runTransaction":
 		req = new(usaepay.RunTransactionRequest)
 		req.SetToken(token)
 		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { log.Panic(err.Error()) }
+		if err != nil { Error(err, errPath) }
 		res = new(usaepay.RunTransactionResponse)
 	case "createBatchUpload":
 		req = new(usaepay.CreateBatchUploadRequest)
@@ -92,23 +104,23 @@ func main() {
 		_, err = usaepay.JSONToXML(req, in)
 		err := req.PostProcess()
 		body, err = usaepay.JSONToXML(req, in)
-		if err != nil { log.Panic(err.Error()) }
+		if err != nil { Error(err, errPath) }
 		res = new(usaepay.CreateBatchUploadResponse)
 	}
 
 	if *debug { log.Println(string(body)) }
 
 	httpReq, err := usaepay.NewRequest(*location, string(body))
-	if err != nil { log.Panic(err.Error()) }
+	if err != nil { Error(err, errPath) }
 	fullBody, err := res.Handle(httpReq)
-	if err != nil { log.Panic(err.Error()) }
+	if err != nil { Error(err, errPath) }
 	b, err := res.Decode(fullBody)
-	if err != nil { log.Panic(err.Error()) }
+	if err != nil { Error(err, errPath) }
 	// write whole the body
 	if *out == "" {
 		os.Stdout.Write(b)
 	} else {
 		err = ioutil.WriteFile(*out, b, 0644)
-		if err != nil { log.Panic(err) }
+		if err != nil { Error(err, errPath) }
 	}
 }
