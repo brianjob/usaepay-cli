@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"flag"
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"usaepay-cli/usaepay"
 	"os"
@@ -125,10 +126,14 @@ func main() {
 
 	httpReq, err := usaepay.NewRequest(*location, body.String())
 	if err != nil { Error(err, errPath) }
-	fullBody, err := res.Handle(httpReq)
+	httpResp, fullBody, err := res.Handle(httpReq)
 	if err != nil { Error(err, errPath) }
 	b, err := res.Decode(fullBody)
 	if err != nil { Error(err, errPath) }
+	if httpResp.StatusCode != 200 {
+		err = errors.New(string(b))
+		Error(err, errPath)
+	}
 	// write whole the body
 	if *out == "" {
 		os.Stdout.Write(b)

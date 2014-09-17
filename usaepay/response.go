@@ -8,10 +8,10 @@ import (
 )
 
 type Response interface {
-	Handle(req *http.Request) ([]byte, error)
+	Handle(req *http.Request) (*http.Response, []byte, error)
 	Decode([]byte) ([]byte, error)
 	GetBody() string
-	ToXML() 
+	ToXML()
 }
 
 type USAePayResponse struct {
@@ -36,9 +36,14 @@ func Base64Decode(body string) ([]byte, error) {
 	return base64.URLEncoding.DecodeString(body)
 }
 
-func (res *USAePayResponse) Handle(req *http.Request) ([]byte, error) {
+func (res *USAePayResponse) Handle(req *http.Request) (*http.Response, []byte, error) {
 	client := http.Client{}
 	resp, err := client.Do(req)
-	if err != nil { return nil, err }
-	return ioutil.ReadAll(resp.Body)
+	if err != nil { return nil, nil, err }
+	b, err := ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return resp, b, err
+	}
+	if err != nil { return nil, nil, err }
+	return resp, b, err
 }
