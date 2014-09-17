@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"net/http"
 	"io/ioutil"
-	"log"
 )
 
 type Response interface {
@@ -40,12 +39,6 @@ func Base64Decode(body string) ([]byte, error) {
 func (res *USAePayResponse) Handle(req *http.Request) ([]byte, error) {
 	client := http.Client{}
 	resp, err := client.Do(req)
-	if err != nil { log.Println(err.Error()) }
-	if resp.StatusCode != 200 { 
-		log.Println(resp.Status)
-		body, _ := ioutil.ReadAll(resp.Body)
-		log.Println(string(body))
-	}
-
+	if err != nil { return nil, err }
 	return ioutil.ReadAll(resp.Body)
 }
