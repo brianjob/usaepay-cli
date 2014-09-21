@@ -89,8 +89,6 @@ func main() {
 		req.SetToken(token)
 		res = new(usaepay.GetTransactionReportResponse)
 	case "searchTransactionsCustom":
-		req = new(usaepay.SearchTransactionsCustomRequest)
-		req.SetToken(token)
 		res = new(usaepay.SearchTransactionsCustomResponse)
 	case "searchCustomers":
 		req = new(usaepay.SearchCustomersRequest)

@@ -4,6 +4,18 @@ import (
 	"encoding/xml"
 )
 
+type Search struct {
+	XMLName xml.Name `xml:"Search"`
+	Params []*SearchParam
+}
+
+type SearchParam struct {
+	XMLName xml.Name `xml:"item"`
+	Field string
+	Type string
+	Value string
+}
+
 type SearchCustomersRequest struct {
 	XMLName xml.Name `xml:"ns1:searchCustomers"`
 	MatchAll bool
