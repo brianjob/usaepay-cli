@@ -4,19 +4,6 @@ import (
 	"encoding/xml"
 )
 
-const (
-	DateFormat = "01/02/2006"
-)
-
-type GetTransactionReportRequest struct {
-	XMLName xml.Name `xml:"ns1:getTransactionReport"`
-	StartDate string
-	EndDate string
-	Report string
-	Format string
-	USAePayRequest
-}
-
 type GetTransactionReportResponse struct {
 	XMLName xml.Name `xml:"Envelope"`
 	Body string `xml:"Body>getTransactionReportResponse>getTransactionReportReturn"`

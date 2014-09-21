@@ -85,8 +85,6 @@ func main() {
 
 	switch cmd {
 	case "getTransactionReport":
-		req = new(usaepay.GetTransactionReportRequest)
-		req.SetToken(token)
 		res = new(usaepay.GetTransactionReportResponse)
 	case "searchTransactionsCustom":
 		res = new(usaepay.SearchTransactionsCustomResponse)
