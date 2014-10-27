@@ -35,7 +35,7 @@ type Address struct {
 }
 
 type CheckData struct {
-	CheckNumber int
+	CheckNumber string
 	Routing string
 	Account string
 	AccountType string
